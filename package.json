@@ -1,0 +1,37 @@
+{
+  "name": "my_node_app",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": "https://EugenGam.github.io/GoIT_NodeJS",
+  "dependencies": {
+    "@testing-library/jest-dom": "^4.2.4",
+    "@testing-library/react": "^9.5.0",
+    "@testing-library/user-event": "^7.2.1",
+    "gh-pages": "^3.0.0",
+    "node-sass": "^4.14.1",
+    "prettier": "^2.0.5"
+  },
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon ./index.js localhost 8080",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.4"
+  }
+}
