@@ -1,48 +1,68 @@
-const path = require("path");
-const fsPromises = require("fs").promises;
 const Joi = require("joi");
-const contactsProceed = require("./contacts.js");
-
-const contactsPath = path.join(__dirname, "../db/contacts.json");
+const contactModel = require("../models/contact.model");
 
 class ContactController {
-  async getContacts(req, res, next) {
-    const contactsList = await contactsProceed.listContacts();
-    res.status(200).send(contactsList);
+  async getContacts(req, res) {
+    try {
+      const contacts = await contactModel.find();
+      res.status(200).send(contacts);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async getContact(req, res) {
-    const id = parseInt(req.params.contactId);
-    const contact = await contactsProceed.getContactById(id);
-    if (contact) {
-      res.status(200).send(contact);
-    } else {
-      res.status(404).send({ message: "Not found" });
+    const id = req.params.contactId;
+    try {
+      const contact = await contactModel.findOne({ _id: id });
+      if (contact) {
+        res.status(200).send(contact);
+      } else res.status(404).send({ message: "Not found" });
+    } catch (err) {
+      console.log(err);
     }
   }
 
   async postContact(req, res) {
-    const newContact = await contactsProceed.addContact(req.body);
-    res.status(201).json(newContact);
+    try {
+      const newContact = await contactModel.create(req.body);
+      res.status(201).json(newContact);
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   async deleteContact(req, res) {
-    const id = parseInt(req.params.contactId);
-    const result = await contactsProceed.removeContact(id);
-    if (result) {
-      res.status(200).json({ message: "contact deleted" });
-    } else {
-      res.status(404).json({ message: "Not found" });
+    const id = req.params.contactId;
+    try {
+      const result = await contactModel.findByIdAndDelete(id);
+      if (result) {
+        res.status(200).json({ message: "contact deleted" });
+      } else res.status(404).json({ message: "Not found" });
+    } catch (err) {
+      console.log(err);
     }
   }
 
   async patchContact(req, res) {
     if (req.body) {
-      const id = parseInt(req.params.contactId);
-      const result = await contactsProceed.updateContact(id, req);
-      if (result) {
-        res.status(200).json(result);
-      } else res.status(404).json({ message: "Not found" });
+      try {
+        const id = req.params.contactId;
+        const result = await contactModel.findByIdAndUpdate(
+          id,
+          {
+            $set: req.body,
+          },
+          {
+            new: true,
+          }
+        );
+        if (result) {
+          res.status(200).json(result);
+        } else res.status(404).json({ message: "Not found" });
+      } catch (err) {
+        console.log(err);
+      }
     } else res.status(400).json({ message: "missing fields" });
   }
 
