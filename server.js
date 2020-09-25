@@ -4,6 +4,7 @@ const morgan = require("morgan");
 const mongoose = require("mongoose");
 
 const contactRouter = require("./api/routers/contacts.router");
+const userRouter = require("./api/routers/users.router");
 
 const PORT = 3000;
 const MONGO_DB =
@@ -35,17 +36,19 @@ module.exports = class ContactsServer {
 
   initRoutes() {
     this.server.use("/api/contacts", contactRouter);
+    this.server.use("/api/users", userRouter);
   }
 
   async initMongoDB() {
-    await mongoose.connect(MONGO_DB, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    // if (err) {
-    //   console.log(err);
-    // } else console.log("Database connection successful");
-    console.log("Database connection successful");
+    try {
+      await mongoose.connect(MONGO_DB, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
+      console.log("Database connection successful");
+    } catch (err) {
+      console.log(err);
+    }
   }
 
   startListening() {
