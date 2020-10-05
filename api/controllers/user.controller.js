@@ -1,22 +1,46 @@
 const Joi = require("joi");
 const bcrypt = require("bcrypt");
+const path = require("path");
 const jwt = require("jsonwebtoken");
-
+const { promises: fsPromises } = require("fs");
+const fs = require("fs");
+const geterateAvatar = require("../helpers/geterate.avatar");
 const userModel = require("../models/user.model");
 
 const saltRounds = 10;
 
 class UserController {
+  async postImage(req, res) {
+    try {
+      await userModel.findOneAndUpdate(
+        { _id: req.user._id },
+        { $set: { avatarURL: req.file.path } }
+      );
+    } catch (err) {
+      console.log(err);
+    }
+    res.status(200).send({ answer: "image uploaded" });
+  }
+
   async postUser(req, res) {
     try {
+      const avatar = geterateAvatar();
       const hash = bcrypt.hashSync(req.body.password, saltRounds);
-      let newUser = { email: req.body.email, password: hash };
+      let newUser = {
+        email: req.body.email,
+        password: hash,
+        avatarURL: avatar.filePath,
+      };
       newUser = await userModel.create(newUser);
       res.status(201).json({
         user: {
           email: newUser.email,
           subscription: newUser.subscription,
+          avatar: avatar.filePath,
         },
+      });
+      fs.unlink(avatar.destenition, function (err) {
+        if (err) throw err;
       });
     } catch (err) {
       console.log(err);
@@ -64,7 +88,6 @@ class UserController {
   }
 
   async currentUser(req, res) {
-    console.log(req.user);
     const token = req.headers.authorization.slice(7);
     try {
       const decoded = jwt.decode(token, "secretKey");
@@ -75,10 +98,31 @@ class UserController {
         res.status(200).send({
           email: user.email,
           subscription: user.subscription,
+          avatar: user.avatarURL,
         });
       }
     } catch (err) {
       console.log("ERROR", err);
+    }
+  }
+
+  async validateAvatar(req, res, next) {
+    try {
+      const token = req.headers.authorization.slice(7);
+      const decoded = jwt.decode(token, "secretKey");
+      const checkUser = await userModel.findOne({ _id: decoded.id });
+      req.user = checkUser;
+      if (checkUser.avatarURL !== "") {
+        console.log(checkUser.avatarURL);
+        // const filePath = path.join("public", checkUser.avatarURL);
+        await fsPromises.unlink(checkUser.avatarURL, function (err) {
+          if (err) throw err;
+        });
+        console.log("old avatar deleted");
+        next();
+      } else next();
+    } catch (err) {
+      console.log(err);
     }
   }
 

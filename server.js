@@ -37,6 +37,7 @@ module.exports = class ContactsServer {
   initRoutes() {
     this.server.use("/api/contacts", contactRouter);
     this.server.use("/api/users", userRouter);
+    this.server.use(express.static("public"));
   }
 
   async initMongoDB() {
