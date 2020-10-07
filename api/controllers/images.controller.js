@@ -5,6 +5,7 @@ const { v4: uuidv4 } = require("uuid");
 const imagemin = require("imagemin");
 const imageminMozjpeg = require("imagemin-mozjpeg");
 const imageminPngquant = require("imagemin-pngquant");
+const config = require("../helpers/config");
 
 const storage = multer.diskStorage({
   destination: "temp",
@@ -16,11 +17,10 @@ const storage = multer.diskStorage({
 });
 
 async function minifyImage(req, res, next) {
-  const MINIFIED_DIR = "public/images";
   const { filename } = req.file;
   try {
     await imagemin([`temp/${filename}`], {
-      destination: MINIFIED_DIR,
+      destination: config.avatars,
       plugins: [
         imageminMozjpeg({ quality: 50 }),
         imageminPngquant({
@@ -29,8 +29,8 @@ async function minifyImage(req, res, next) {
       ],
     });
     await fsPromises.unlink(req.file.path);
-    req.file.path = path.join("public/images", filename);
-    req.file.destination = MINIFIED_DIR;
+    req.file.path = path.join(config.avatars, filename);
+    req.file.destination = config.avatars;
     next();
   } catch (err) {
     next(err);

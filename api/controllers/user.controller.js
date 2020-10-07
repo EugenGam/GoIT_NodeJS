@@ -3,7 +3,6 @@ const bcrypt = require("bcrypt");
 const path = require("path");
 const jwt = require("jsonwebtoken");
 const { promises: fsPromises } = require("fs");
-const fs = require("fs");
 const geterateAvatar = require("../helpers/geterate.avatar");
 const userModel = require("../models/user.model");
 
@@ -39,9 +38,7 @@ class UserController {
           avatar: avatar.filePath,
         },
       });
-      fs.unlink(avatar.destenition, function (err) {
-        if (err) throw err;
-      });
+      fsPromises.unlink(avatar.destenition);
     } catch (err) {
       console.log(err);
     }
@@ -90,7 +87,7 @@ class UserController {
   async currentUser(req, res) {
     const token = req.headers.authorization.slice(7);
     try {
-      const decoded = jwt.decode(token, "secretKey");
+      const decoded = jwt.verify(token, "secretKey");
       const user = await userModel.findOne({ _id: decoded.id });
       if (!user) {
         res.status(401).send({ message: "Not authorized" });
@@ -109,15 +106,11 @@ class UserController {
   async validateAvatar(req, res, next) {
     try {
       const token = req.headers.authorization.slice(7);
-      const decoded = jwt.decode(token, "secretKey");
+      const decoded = jwt.verify(token, "secretKey");
       const checkUser = await userModel.findOne({ _id: decoded.id });
       req.user = checkUser;
       if (checkUser.avatarURL !== "") {
-        console.log(checkUser.avatarURL);
-        // const filePath = path.join("public", checkUser.avatarURL);
-        await fsPromises.unlink(checkUser.avatarURL, function (err) {
-          if (err) throw err;
-        });
+        await fsPromises.unlink(checkUser.avatarURL);
         console.log("old avatar deleted");
         next();
       } else next();
