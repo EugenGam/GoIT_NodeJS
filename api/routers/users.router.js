@@ -1,8 +1,18 @@
 const express = require("express");
 const userController = require("../controllers/user.controller");
 const UserController = require("../controllers/user.controller");
+const ImageController = require("../controllers/images.controller");
 
 const usersRouter = express.Router();
+
+usersRouter.post(
+  "/images",
+  userController.tokenValidate,
+  ImageController.upload.single("avatar"),
+  ImageController.minifyImage,
+  UserController.validateAvatar,
+  UserController.postImage
+);
 
 usersRouter.post(
   "/auth/register",
