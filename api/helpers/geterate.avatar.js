@@ -13,7 +13,6 @@ function geterateAvatar() {
   const tempFile = fs.createReadStream(destenition);
   const imageFile = fs.createWriteStream(filePath);
   tempFile.pipe(imageFile);
-  console.log(destenition, filePath);
   return { destenition, filePath };
 }
 

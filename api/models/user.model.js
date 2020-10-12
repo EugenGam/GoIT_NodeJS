@@ -12,6 +12,7 @@ const userSchema = new Schema(
       default: "free",
     },
     token: { type: String },
+    verificationToken: { type: String },
   },
   { versionKey: false }
 );

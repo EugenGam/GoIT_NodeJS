@@ -2,9 +2,11 @@ const Joi = require("joi");
 const bcrypt = require("bcrypt");
 const path = require("path");
 const jwt = require("jsonwebtoken");
+const { uuid } = require("uuidv4");
 const { promises: fsPromises } = require("fs");
 const geterateAvatar = require("../helpers/geterate.avatar");
 const userModel = require("../models/user.model");
+const verifyEmail = require("../../email.sender");
 
 const saltRounds = 10;
 
@@ -29,7 +31,9 @@ class UserController {
         email: req.body.email,
         password: hash,
         avatarURL: avatar.filePath,
+        verificationToken: uuid(),
       };
+      verifyEmail(newUser.email, newUser.verificationToken);
       newUser = await userModel.create(newUser);
       res.status(201).json({
         user: {
@@ -39,6 +43,22 @@ class UserController {
         },
       });
       fsPromises.unlink(avatar.destenition);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async validateVerificationToken(req, res) {
+    try {
+      const user = await userModel.findOneAndUpdate(
+        { verificationToken: req.params.verificationToken },
+        { $set: { verificationToken: "" } }
+      );
+      if (!user) {
+        res.status(404).send({ message: "User not found" });
+      } else {
+        res.status(200).send();
+      }
     } catch (err) {
       console.log(err);
     }

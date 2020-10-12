@@ -21,6 +21,11 @@ usersRouter.post(
   UserController.postUser
 );
 
+usersRouter.get(
+  "/auth/verify/:verificationToken",
+  UserController.validateVerificationToken
+);
+
 usersRouter.post(
   "/auth/login",
   UserController.validateUser,
